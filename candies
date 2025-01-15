@@ -1,0 +1,54 @@
+use std::env;
+use std::fs::File;
+use std::io::{self, BufRead, Write};
+
+/*
+ * Complete the 'candies' function below.
+ *
+ * The function is expected to return a LONG_INTEGER.
+ * The function accepts following parameters:
+ *  1. INTEGER n
+ *  2. INTEGER_ARRAY arr
+ */
+
+fn candies(n: i32, arr: &[i32]) -> i64 {
+    // Step 1: Initialize candies array
+    let mut candies = vec![1; n as usize]; // Everyone gets at least 1 candy
+
+    // Step 2: Left to right pass
+    for i in 1..n as usize {
+        if arr[i] > arr[i - 1] {
+            candies[i] = candies[i - 1] + 1;
+        }
+    }
+
+    // Step 3: Right to left pass
+    for i in (0..n as usize - 1).rev() {
+        if arr[i] > arr[i + 1] {
+            candies[i] = candies[i].max(candies[i + 1] + 1);
+        }
+    }
+
+    // Step 4: Return the total number of candies
+    candies.iter().sum::<i64>()
+}
+
+fn main() {
+    let stdin = io::stdin();
+    let mut stdin_iterator = stdin.lock().lines();
+
+    let mut fptr = File::create(env::var("OUTPUT_PATH").unwrap()).unwrap();
+
+    let n = stdin_iterator.next().unwrap().unwrap().trim().parse::<i32>().unwrap();
+
+    let mut arr: Vec<i32> = Vec::with_capacity(n as usize);
+
+    for _ in 0..n {
+        let arr_item = stdin_iterator.next().unwrap().unwrap().trim().parse::<i32>().unwrap();
+        arr.push(arr_item);
+    }
+
+    let result = candies(n, &arr);
+
+    writeln!(&mut fptr, "{}", result).ok();
+}
