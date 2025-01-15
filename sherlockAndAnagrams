@@ -1,0 +1,46 @@
+use std::collections::HashMap;
+use std::env;
+use std::fs::File;
+use std::io::{self, BufRead, Write};
+
+fn sherlockAndAnagrams(s: &str) -> i32 {
+    let mut substrings_map: HashMap<String, i32> = HashMap::new();
+    let mut count = 0;
+
+    // Generate all substrings of s
+    for i in 0..s.len() {
+        for j in i+1..=s.len() {
+            // Extract substring from index i to j
+            let substring = &s[i..j];
+            
+            // Sort the characters of the substring
+            let mut chars: Vec<char> = substring.chars().collect();
+            chars.sort();
+            let sorted_substring: String = chars.iter().collect();
+
+            // Check how many times this sorted substring has appeared
+            let occurrences = substrings_map.entry(sorted_substring).or_insert(0);
+            count += *occurrences;
+            *occurrences += 1;
+        }
+    }
+
+    count
+}
+
+fn main() {
+    let stdin = io::stdin();
+    let mut stdin_iterator = stdin.lock().lines();
+
+    let mut fptr = File::create(env::var("OUTPUT_PATH").unwrap()).unwrap();
+
+    let q = stdin_iterator.next().unwrap().unwrap().trim().parse::<i32>().unwrap();
+
+    for _ in 0..q {
+        let s = stdin_iterator.next().unwrap().unwrap();
+
+        let result = sherlockAndAnagrams(&s);
+
+        writeln!(&mut fptr, "{}", result).ok();
+    }
+}
