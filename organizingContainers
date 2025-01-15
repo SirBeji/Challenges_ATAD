@@ -1,0 +1,56 @@
+use std::env;
+use std::fs::File;
+use std::io::{self, BufRead, Write};
+
+fn organizingContainers(container: &[Vec<i32>]) -> String {
+    // Calculate the total number of balls in each container (sum of rows)
+    let mut container_sums: Vec<i32> = container.iter().map(|row| row.iter().sum()).collect();
+    
+    // Calculate the total number of balls of each type (sum of columns)
+    let mut type_sums: Vec<i32> = vec![0; container.len()];
+    for row in container.iter() {
+        for (j, &ball_count) in row.iter().enumerate() {
+            type_sums[j] += ball_count;
+        }
+    }
+
+    // Sort both sums
+    container_sums.sort();
+    type_sums.sort();
+
+    // If sorted container sums are equal to sorted type sums, return "Possible", otherwise "Impossible"
+    if container_sums == type_sums {
+        "Possible".to_string()
+    } else {
+        "Impossible".to_string()
+    }
+}
+
+fn main() {
+    let stdin = io::stdin();
+    let mut stdin_iterator = stdin.lock().lines();
+
+    let mut fptr = File::create(env::var("OUTPUT_PATH").unwrap()).unwrap();
+
+    let q = stdin_iterator.next().unwrap().unwrap().trim().parse::<i32>().unwrap();
+
+    for _ in 0..q {
+        let n = stdin_iterator.next().unwrap().unwrap().trim().parse::<i32>().unwrap();
+
+        let mut container: Vec<Vec<i32>> = Vec::with_capacity(n as usize);
+
+        for i in 0..n as usize {
+            container.push(Vec::with_capacity(n as usize));
+
+            container[i] = stdin_iterator.next().unwrap().unwrap()
+                .trim_end()
+                .split(' ')
+                .map(|s| s.to_string().parse::<i32>().unwrap())
+                .collect();
+        }
+
+        let result = organizingContainers(&container);
+
+        writeln!(&mut fptr, "{}", result).ok();
+    }
+}
