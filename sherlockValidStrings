@@ -1,0 +1,57 @@
+use std::env;
+use std::fs::File;
+use std::io::{self, BufRead, Write};
+use std::collections::HashMap;
+
+fn isValid(s: &str) -> String {
+    let mut char_freq = HashMap::new();
+
+    // Step 1: Count frequency of each character
+    for ch in s.chars() {
+        *char_freq.entry(ch).or_insert(0) += 1;
+    }
+
+    // Step 2: Count how many times each frequency occurs
+    let mut freq_count = HashMap::new();
+    for &freq in char_freq.values() {
+        *freq_count.entry(freq).or_insert(0) += 1;
+    }
+
+    // Step 3: Analyze the frequency distribution
+    if freq_count.len() == 1 {
+        // All characters have the same frequency
+        return "YES".to_string();
+    }
+
+    if freq_count.len() == 2 {
+        let mut freq_iter = freq_count.iter();
+        let (freq1, count1) = freq_iter.next().unwrap();
+        let (freq2, count2) = freq_iter.next().unwrap();
+
+        // Case 1: One frequency is 1 and appears only once (we can remove one character)
+        if *freq1 == 1 && *count1 == 1 || *freq2 == 1 && *count2 == 1 {
+            return "YES".to_string();
+        }
+
+        // Case 2: One frequency is exactly one more than the other, and the higher frequency appears once
+        if (*freq1 == *freq2 + 1 && *count1 == 1) || (*freq2 == *freq1 + 1 && *count2 == 1) {
+            return "YES".to_string();
+        }
+    }
+
+    // If no conditions match, return NO
+    "NO".to_string()
+}
+
+fn main() {
+    let stdin = io::stdin();
+    let mut stdin_iterator = stdin.lock().lines();
+
+    let mut fptr = File::create(env::var("OUTPUT_PATH").unwrap()).unwrap();
+
+    let s = stdin_iterator.next().unwrap().unwrap();
+
+    let result = isValid(&s);
+
+    writeln!(&mut fptr, "{}", result).ok();
+}
